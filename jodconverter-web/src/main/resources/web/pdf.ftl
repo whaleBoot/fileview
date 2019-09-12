@@ -25,7 +25,16 @@
 
 </body>
 <script type="text/javascript">
-    document.getElementsByTagName('iframe')[0].src = "/pdfjs/web/viewer.html?file="+encodeURIComponent('${finalUrl}');
+    <#--document.getElementsByTagName('iframe')[0].src = "/pdfjs/web/viewer.html?file="+encodeURIComponent('${finalUrl}');-->
+
+    var contextPath = getRootPath();
+    if (contextPath != null && contextPath !== "/") {
+        console.log(contextPath)
+        document.getElementsByTagName('iframe')[0].src = "/" + contextPath + "/pdfjs/web/viewer.html?file=" + encodeURIComponent('${finalUrl}');
+    } else {
+        document.getElementsByTagName('iframe')[0].src = "/pdfjs/web/viewer.html?file=" + encodeURIComponent('${finalUrl}');
+    }
+
     document.getElementsByTagName('iframe')[0].height = document.documentElement.clientHeight-10;
     /**
      * 页面变化调整高度
@@ -43,6 +52,31 @@
             url = url + "&officePreviewType=image";
         }
         window.location.href=url;
+    }
+
+    function getRootPath() {
+        //获取当前网址，如：http://localhost:8080/supermarket/user.do?method=query
+        var currentWwwPath = window.document.location.href;
+        //获取主机地址之后的目录，如：/supermarket/user.do(注意：不包括?后面传递的参数)
+        var pathName = window.document.location.pathname;
+
+        //获取/uimcardprj中/的位置(也就是主机地址后面的/)，这里是：21
+        var position = currentWwwPath.indexOf(pathName);
+
+        //获取主机地址，如：http://localhost:8080
+        var localhostPath = currentWwwPath.substring(0, position);
+
+
+        //获取带"/"的项目名，如：/supermarket 
+        //   /supermarket(0是为了把/也截取出来)
+        var projectName = pathName.substring(1, pathName.substr(1).indexOf('/') + 1);
+        //alert(pathName.substr(1).indexOf('/')); //这里是11，最后用substring截取字符串时，不包括第二个参数，所以要+1
+        //pathName.substr(1)的结果是：supermarket/user.do
+        //pathName.substr(1).indexOf('/')的结果是：supermarket的长度，就是11
+        //indexOf('/')指的是字符串/首次出现的位置
+
+        path = projectName;
+        return path;
     }
 </script>
 </html>
