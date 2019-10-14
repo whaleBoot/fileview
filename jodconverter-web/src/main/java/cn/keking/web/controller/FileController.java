@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import cn.keking.model.ReturnResponse;
 import cn.keking.utils.FileUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -16,17 +17,18 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 /**
- *
  * @author yudian-it
  * @date 2017/12/1
  */
 @RestController
+@Slf4j
 public class FileController {
     String fileDir = ConfigConstants.getFileDir();
     @Autowired
@@ -46,9 +48,10 @@ public class FileController {
         int winSep = fileName.lastIndexOf('\\');
         // Cut off at latest possible point
         int pos = (winSep > unixSep ? winSep : unixSep);
-        if (pos != -1)  {
+        if (pos != -1) {
             fileName = fileName.substring(pos + 1);
         }
+
 
         // 判断该文件类型是否有上传过，如果上传过则提示不允许再次上传
         if (existsTypeFile(fileName)) {
@@ -58,8 +61,47 @@ public class FileController {
         if (!outFile.exists()) {
             outFile.mkdirs();
         }
-        try(InputStream in = file.getInputStream();
-            OutputStream ot = new FileOutputStream(fileDir + demoPath + fileName)){
+//        BufferedReader bufferedReader = null;
+//        BufferedWriter bufferedWriter = null;
+//
+//        try {
+//            bufferedReader = new BufferedReader(new InputStreamReader(file.getInputStream(), "GBK"));
+//            //写入流,设置缓存区大小为1024K
+//            bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileDir + demoPath + fileName), "UTF-8"), 1024);
+//            String line;
+//            while ((line = bufferedReader.readLine()) != null) {
+//                bufferedWriter.write(line);
+//                bufferedWriter.newLine();
+//            }
+//        } catch (IOException e) {
+//            log.error("异常:{}", e);
+//            return new ObjectMapper().writeValueAsString(new ReturnResponse<String>(1, "FAILURE", null));
+//        } finally {
+//            if (bufferedWriter != null) {
+//                try {
+//                    //刷新缓存区
+//                    bufferedWriter.flush();
+//                    bufferedWriter.close();
+//                } catch (IOException e) {
+//                    log.error("关闭输出流异常:{}", e);
+//                    return new ObjectMapper().writeValueAsString(new ReturnResponse<String>(1, "FAILURE", null));
+//                }
+//            }
+//            if (bufferedReader != null) {
+//                try {
+//                    bufferedReader.close();
+//                } catch (IOException e) {
+//                    log.error("关闭读取流异常:{}", e);
+//                    return new ObjectMapper().writeValueAsString(new ReturnResponse<String>(1, "FAILURE", null));
+//                }
+//            }
+//        }
+//        log.info("安全结束");
+//        return new ObjectMapper().writeValueAsString(new ReturnResponse<String>(0, "SUCCESS", null));
+
+
+        try (InputStream in = file.getInputStream();
+             OutputStream ot = new FileOutputStream(fileDir + demoPath + fileName)) {
             byte[] buffer = new byte[1024];
             int len;
             while ((-1 != (len = in.read(buffer)))) {
@@ -103,15 +145,16 @@ public class FileController {
 
     /**
      * 是否存在该类型的文件
-     * @return
+     *
      * @param fileName
+     * @return
      */
     private boolean existsTypeFile(String fileName) {
         boolean result = false;
         String suffix = fileUtils.getSuffixFromFileName(fileName);
         File file = new File(fileDir + demoPath);
         if (file.exists()) {
-            for(File file1 : file.listFiles()){
+            for (File file1 : file.listFiles()) {
                 String existsFileSuffix = fileUtils.getSuffixFromFileName(file1.getName());
                 if (suffix.equals(existsFileSuffix)) {
                     result = true;

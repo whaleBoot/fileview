@@ -40,12 +40,17 @@ public class PdfUtils {
         Integer imageCount = fileUtils.getConvertedPdfImage(pdfFilePath);
         String imageFileSuffix = ".jpg";
         // https://8个字符  http://7个字符 从这后面开始出现的第一个/就是当前file.Dir下的根目录
-        log.info("url={}",url);
+        log.info("url={}", url);
         int index1 = url.indexOf("/", 8);
 
         String pdfFolder = pdfName.substring(0, pdfName.length() - 4);
-        String urlPrefix = url.substring(0, index1 + 1) +"documentService/"+ pdfFolder;
-        log.info("urlPrefix{}",urlPrefix);
+        String urlPrefix = null;
+        if (!CheckIPUtil.isIP(checkIP.getHost()) || !CheckIPUtil.internalIp(checkIP.getHost())) {
+            urlPrefix = url.substring(0, index1 + 1) + "documentService/" + pdfFolder;
+        } else {
+            urlPrefix = url.substring(0, index1 + 1) + pdfFolder;
+        }
+        log.info("urlPrefix{}", urlPrefix);
         if (imageCount != null && imageCount.intValue() > 0) {
             for (int i = 0; i < imageCount; i++)
                 imageUrls.add(urlPrefix + "/" + i + imageFileSuffix);
